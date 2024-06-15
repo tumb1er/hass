@@ -1,0 +1,125 @@
+blueprint:
+  name: Занятость помещения
+  description: В зависимости от состояния двери и датчика движения изменяет статус занятости помещения
+  domain: automation
+  input:
+    door_sensor:
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: door
+          multiple: false
+    move_sensor:
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+          multiple: false
+    occupancy_sensor:
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: motion
+          multiple: false
+    state_select:
+      selector:
+        entity:
+          domain: input_select
+          multiple: false
+    timeout:
+      name: Время ожидания движения
+      selector:
+        duration:
+
+trigger:
+  - platform: state
+    entity_id: !input door_sensor
+    to: "on"
+    id: door_opened
+  - platform: state
+    entity_id: !input door_sensor
+    to: "off"
+    for: "00:00:5"
+    id: door_closed_for_time
+  - platform: state
+    entity_id: !input state_select
+    to: "wait"
+    for: !input timeout
+    id: state_wait_for_time
+  - platform: state
+    entity_id: !input move_sensor
+    to: "on"
+    id: movement_detected
+  - platform: state
+    entity_id: !input occupancy_sensor
+    to: "off"
+    id: occupancy_unoccupied
+condition: [ ]
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: door_opened
+        sequence:
+          - service: input_select.select_option
+            data:
+              option: "open"
+            target:
+              entity_id: !input state_select
+      - conditions:
+          - condition: trigger
+            id: door_closed_for_time
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: state
+                    entity_id: !input move_sensor
+                    state: "on"
+                sequence:
+                  - service: input_select.select_option
+                    data:
+                      option: "busy"
+                    target:
+                      entity_id: !input state_select
+            default:
+              - service: input_select.select_option
+                data:
+                  option: "wait"
+                target:
+                  entity_id: !input state_select
+      - conditions:
+          - condition: trigger
+            id: state_wait_for_time
+        sequence:
+          - service: input_select.select_option
+            data:
+              option: "free"
+            target:
+              entity_id: !input state_select
+      - conditions:
+          - condition: trigger
+            id: movement_detected
+          - condition: or
+            conditions:
+            - condition: state
+              entity_id: !input state_select
+              state: "wait"
+            - condition: state
+              entity_id: !input state_select
+              state: "free"
+        sequence:
+          - service: input_select.select_option
+            data:
+              option: "busy"
+            target:
+              entity_id: !input state_select
+      - conditions:
+          - condition: trigger
+            id: occupancy_unoccupied
+        sequence:
+          - service: input_select.select_option
+            data:
+              option: "wait"
+            target:
+              entity_id: !input state_select
+    default: [ ]
