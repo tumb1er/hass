@@ -39,7 +39,7 @@ trigger:
   - platform: state
     entity_id: !input door_sensor
     to: "off"
-    for: "00:00:5"
+    for: "00:00:06"
     id: door_closed_for_time
   - platform: state
     entity_id: !input state_select
