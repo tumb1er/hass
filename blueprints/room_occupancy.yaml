@@ -15,12 +15,6 @@ blueprint:
           domain: binary_sensor
           device_class: motion
           multiple: false
-    occupancy_sensor:
-      selector:
-        entity:
-          domain: binary_sensor
-          device_class: motion
-          multiple: false
     state_select:
       selector:
         entity:
@@ -28,6 +22,10 @@ blueprint:
           multiple: false
     timeout:
       name: Время ожидания движения
+      selector:
+        duration:
+    cooldown:
+      name: Время отключения датчика движения
       selector:
         duration:
 
@@ -39,7 +37,7 @@ trigger:
   - platform: state
     entity_id: !input door_sensor
     to: "off"
-    for: "00:00:06"
+    for: !input cooldown
     id: door_closed_for_time
   - platform: state
     entity_id: !input state_select
@@ -50,10 +48,6 @@ trigger:
     entity_id: !input move_sensor
     to: "on"
     id: movement_detected
-  - platform: state
-    entity_id: !input occupancy_sensor
-    to: "off"
-    id: occupancy_unoccupied
 condition: [ ]
 action:
   - choose:
@@ -111,15 +105,6 @@ action:
           - service: input_select.select_option
             data:
               option: "busy"
-            target:
-              entity_id: !input state_select
-      - conditions:
-          - condition: trigger
-            id: occupancy_unoccupied
-        sequence:
-          - service: input_select.select_option
-            data:
-              option: "wait"
             target:
               entity_id: !input state_select
     default: [ ]
