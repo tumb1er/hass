@@ -1,0 +1,42 @@
+blueprint:
+  name: Освещение при занятости
+  description: В зависимости от занятости помещения включает или выключает свет
+  domain: automation
+  input:
+    state_select:
+      selector:
+        entity:
+          domain: input_select
+          multiple: false
+    occupied:
+      selector:
+        entity:
+          domain: scnene
+          multiple: false
+    available:
+      selector:
+        entity:
+          domain: scnene
+          multiple: false
+    
+trigger:
+  - platform: state
+    entity_id:
+      - !input state_celect
+condition: [ ]
+action:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input state_select
+            state: free
+        sequence:
+          - service: scene.turn_on
+            metadata: {}
+            target:
+              entity_id: !input available
+    default:
+      - service: scene.turn_on
+        metadata: {}
+        target:
+          entity_id: !input occupied
