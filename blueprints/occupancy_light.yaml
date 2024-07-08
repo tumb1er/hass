@@ -11,12 +11,12 @@ blueprint:
     occupied:
       selector:
         entity:
-          domain: scnene
+          domain: scene
           multiple: false
     available:
       selector:
         entity:
-          domain: scnene
+          domain: scene
           multiple: false
     
 trigger:
