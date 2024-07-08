@@ -22,7 +22,7 @@ blueprint:
 trigger:
   - platform: state
     entity_id:
-      - !input state_celect
+      - !input state_select
 condition: [ ]
 action:
   - choose:
