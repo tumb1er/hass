@@ -23,9 +23,6 @@ blueprint:
         entity:
           domain: input_number
           multiple: false
-variables:
-  warm: !input warm
-  cold: !input cold
     
 trigger:
   - platform: state
@@ -33,6 +30,9 @@ trigger:
       - !input tod
 condition: []
 action:
+  - variables:
+      warm: !input warm
+      cold: !input cold
   - if:
       - condition: state
         entity_id: !input tod
