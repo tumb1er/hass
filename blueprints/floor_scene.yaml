@@ -23,9 +23,9 @@ blueprint:
         entity:
           domain: input_number
           multiple: false
-  variables:
-    warm: !input warm
-    cold: !input cold
+variables:
+  warm: !input warm
+  cold: !input cold
     
 trigger:
   - platform: state
