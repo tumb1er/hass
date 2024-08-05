@@ -1,0 +1,54 @@
+blueprint:
+  name: Подогрев пола
+  description: В зависимости от времени суток переключает заданную температуру пола
+  domain: automation
+  input:
+    tod:
+      selector:
+        entity:
+          domain: binary_sensor
+          multiple: false
+    floor:
+      selector:
+        entity:
+          domain: climate
+          multiple: false
+    warm:
+      selector:
+        entity:
+          domain: input_number
+          multiple: false
+    cold:
+      selector:
+        entity:
+          domain: input_number
+          multiple: false
+  variables:
+    warm: !input warm
+    cold: !input cold
+    
+trigger:
+  - platform: state
+    entity_id:
+      - !input tod
+condition: []
+action:
+  - if:
+      - condition: state
+        entity_id: !input tod
+        state: "on"
+    then:
+      - service: script.set_mqtt_state
+        metadata: {}
+        data:
+          attribute: temperature
+          value: "{{states(warm)}}"
+          entity: !input floor
+    else:
+      - service: script.set_mqtt_state
+        metadata: {}
+        data:
+          attribute: temperature
+          value: "{{states(cold)}}"
+          entity: !input floor
+mode: single
