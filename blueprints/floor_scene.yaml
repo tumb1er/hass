@@ -41,14 +41,14 @@ action:
       - service: script.set_mqtt_state
         metadata: {}
         data:
-          attribute: temperature
+          attribute: current_heating_setpoint
           value: "{{states(warm)}}"
           entity: !input floor
     else:
       - service: script.set_mqtt_state
         metadata: {}
         data:
-          attribute: temperature
+          attribute: current_heating_setpoint
           value: "{{states(cold)}}"
           entity: !input floor
 mode: single
