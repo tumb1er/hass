@@ -32,7 +32,6 @@ blueprint:
       selector:
         entity:
           domain: input_datetime
-          device_class: time
           multiple: false
     switch:
       name: Выключатель вентиляции
