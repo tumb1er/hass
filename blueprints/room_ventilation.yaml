@@ -1,0 +1,158 @@
+blueprint:
+  name: Вентиляция помещения
+  description: В зависимости от влажности и состояния выключателя переключает состояние вентиляции
+  domain: automation
+  input:
+    humidity:
+      selector:
+        entity:
+          domain: sensor
+          device_class: humidity
+          multiple: false
+    state_select:
+      name: Переменная для отслеживания состояния
+      selector:
+        entity:
+          domain: input_select
+          multiple: false
+    high:
+      name: Порог включения вентиляции
+      selector:
+        entity:
+          domain: input_number
+          multiple: false
+    low:
+      name: Порог выключения вентиляции
+      selector:
+        entity:
+          domain: input_number
+          multiple: false
+    timeout:
+      name: Таймаут автоматического выключения
+      selector:
+        entity:
+          domain: input_datetime
+          device_class: time
+          multiple: false
+    switch:
+      name: Выключатель вентиляции
+      selector:
+        entity:
+          domain: switch
+          multiple: false
+trigger:
+  - platform: numeric_state
+    entity_id: !input humidity
+    above: !input high
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+    id: high_humidity
+  - platform: numeric_state
+    entity_id: !input humidity
+    id: low_humidity
+    below: !input low
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  - platform: state
+    entity_id: !input switch
+    to: "on"
+    id: fan_manual_on
+  - platform: state
+    entity_id: !input switch
+    to: "off"
+    id: fan_manual_off
+  - platform: state
+    entity_id: !input switch
+    to: "on"
+    for: !input timeout
+    id: fan_manual_timeout
+  
+action:
+  - choose:
+      - conditions:
+          - condition: not  # исключаем перевод в manual после включения вентилятора в состоянии draining
+            conditions:
+              - condition: state
+                entity_id: !input state
+                state: draining
+          - condition: trigger
+            id: fan_manual_on
+        sequence:
+          - service: input_select.select_option
+            data:
+              option: "manual"
+            target:
+              entity_id: !input state_select
+      - conditions:
+          - condition: trigger
+            id: fan_manual_off
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: numeric_state
+                    entity_id: !input humidity
+                    above: !input low
+                sequence:
+                  - service: input_select.select_option
+                    data:
+                      option: "pause"
+                    target:
+                      entity_id: !input state_select
+            default:
+              - service: input_select.select_option
+                data:
+                  option: "dry"
+                target:
+                  entity_id: !input state_select
+      - conditions:
+          - condition: trigger
+            id: fan_manual_timeout
+        sequence:
+          - choose:
+              - conditions:
+                  - condition: numeric_state
+                    entity_id: !input humidity
+                    above: !input low
+                sequence:
+                  - service: input_select.select_option
+                    data:
+                      option: "draining"
+                    target:
+                      entity_id: !input state_select
+            default:
+              - service: input_select.select_option
+                data:
+                  option: "dry"
+                target:
+                  entity_id: !input state_select
+      - conditions:
+          - condition: trigger
+            id: high_humidity
+          - condition: state
+            entity_id: !input state_select
+            state: "dry"
+        sequence:
+          - service: input_select.select_option
+            data:
+              option: "draining"
+            target:
+              entity_id: !input state_select
+      - conditions:
+          - condition: not  # исключаем перевод из manual в dry при снижении влажности
+            conditions:
+              - condition: state
+                entity_id: !input state_select
+                state: "manual"
+          - condition: trigger
+            id: low_humidity
+        sequence:
+          - service: input_select.select_option
+            data:
+              option: "dry"
+            target:
+              entity_id: !input state_select
+    default: [ ]
