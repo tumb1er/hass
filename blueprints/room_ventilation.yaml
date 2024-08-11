@@ -39,6 +39,8 @@ blueprint:
         entity:
           domain: switch
           multiple: false
+trigger_variables:
+  timeout: !input timeout
 trigger:
   - platform: numeric_state
     entity_id: !input humidity
@@ -67,7 +69,7 @@ trigger:
   - platform: state
     entity_id: !input switch
     to: "on"
-    for: !input timeout
+    for: {{timeout}}
     id: fan_manual_timeout
   
 action:
