@@ -69,7 +69,7 @@ trigger:
   - platform: state
     entity_id: !input switch
     to: "on"
-    for: {{timeout}}
+    for: {{states(timeout)}}
     id: fan_manual_timeout
   
 action:
