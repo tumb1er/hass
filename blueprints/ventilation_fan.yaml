@@ -1,0 +1,42 @@
+blueprint:
+  name: Вентиляция при влажности
+  description: В зависимости от влажности включает или выключает вентиляцию
+  domain: automation
+  input:
+    state_select:
+      selector:
+        entity:
+          domain: input_select
+          multiple: false
+    switch:
+      selector:
+        entity:
+          domain: switch
+          multiple: false
+trigger:
+  - platform: state
+    entity_id:
+      - !input state_select
+condition: []
+action:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: !input state_select
+            state: draining
+        sequence:
+          - target:
+              entity_id: !input switch
+            action: switch.turn_on
+            data: {}
+      - conditions:
+          - condition: state
+            entity_id: !input state_select
+            state: dry
+        sequence:
+          - target:
+              entity_id: !input switch
+            action: switch.turn_off
+            data: {}
+    default: []
+mode: single
