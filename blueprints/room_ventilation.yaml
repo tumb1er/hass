@@ -77,7 +77,7 @@ action:
           - condition: not  # исключаем перевод в manual после включения вентилятора в состоянии draining
             conditions:
               - condition: state
-                entity_id: !input state
+                entity_id: !input state_select
                 state: draining
           - condition: trigger
             id: fan_manual_on
