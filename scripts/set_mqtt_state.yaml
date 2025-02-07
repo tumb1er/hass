@@ -1,0 +1,31 @@
+alias: Set MQTT State
+sequence:
+- metadata: {}
+  data:
+    qos: 0
+    retain: false
+    topic: zigbee2mqtt/{{entity.split(".")[-1]}}/set/{{ attribute }}
+    payload: '{{ value }}'
+  action: mqtt.publish
+fields:
+  entity:
+    selector:
+      object: {}
+    name: Entity
+    required: true
+  attribute:
+    selector:
+      text:
+    name: Attribute
+    required: true
+    default: state
+  value:
+    selector:
+      text:
+    name: value
+    default: 'on'
+    required: true
+description: Set mqtt device attribute via MQTT Publish service.
+icon: mdi:code-braces
+mode: queued
+max: 10
